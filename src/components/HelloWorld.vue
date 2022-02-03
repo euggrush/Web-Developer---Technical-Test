@@ -12,7 +12,7 @@
       <div class="row">
         <div class="col">
           <img
-            src="../assets/img/profile.jpeg"
+            :src="avatar"
             class="rounded-circle"
             alt="logo"
             width="120"
@@ -21,17 +21,17 @@
         </div>
         <div class="col-6">
           <h3>{{ accountInfo.name }}</h3>
-          <p>Bio</p>
+          <p class="fw-bold">Bio</p>
           <p>
             {{ accountInfo.bio }}
           </p>
         </div>
         <div class="col">
-          <p>Phone</p>
-          <a href="tel:+555-555-5555">{{ accountInfo.phone }}</a>
+          <p class="fw-bold">Phone</p>
+          <a :href="`tel:${accountInfo.phone}`">{{ accountInfo.phone }}</a>
 
-          <p>Email</p>
-          <a href="mailto:nick.reynolds@domain.co">{{ accountInfo.email }}</a>
+          <p class="fw-bold">Email</p>
+          <a :href="`mailto:${accountInfo.email}`">{{ accountInfo.email }}</a>
         </div>
       </div>
     </div>
@@ -39,23 +39,20 @@
     <div class="pictures-wrap container mt-3">
       <div class="row row-cols-auto gap-3">
         <div
-          v-for="(image, index) in accountInfo.album"
+          v-for="(image, index) in albumPictures"
           :key="index"
           class="col image-wrap rounded p-0"
         >
-          <img
-            src="@/assets/img/landscape1.jpeg"
-            class="img-fluid"
-            alt="image"
-          />
+          <img :src="image.img" class="img-fluid" alt="image" />
           <div class="image-information">
             <h4 class="text-white ps-1">{{ image.title }}</h4>
             <span class="d-block pt-3 ps-3 pe-3 pb-1">
               {{ image.description }}
             </span>
             <div class="d-flex justify-content-between pt-1 ps-3 pe-3">
-              <div v-show="image.featured" class="featured-icon">
+              <div class="featured-icon">
                 <svg
+                  v-show="image.featured"
                   width="24"
                   height="24"
                   fill="none"
@@ -78,16 +75,13 @@
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   name: "HelloWorld",
-  props: {
-    msg: String,
-  },
   data() {
     return {
       account: [],
+      avatar: ``,
+      albumPictures: [],
     };
   },
   computed: {
@@ -96,13 +90,27 @@ export default {
     },
   },
   async mounted() {
-    await axios
-      .get(`http://localhost:3000/accounts`)
-      .then((response) => {
-        this.account = response.data[0];
-        console.log(this.account);
-      })
-      .catch((err) => console.log(err));
+    let url = `./data/landscapes.json`;
+    let response = await fetch(url);
+    if (response.ok) {
+      let account = await response.json();
+      console.log(account);
+
+      this.account = account;
+      this.avatar = require(`../assets/` + account.profile_picture);
+      this.albumPictures = this.account.album.map((image) => {
+        return {
+          id: image.id,
+          title: image.title,
+          description: image.description,
+          img: require(`../assets/` + image.img),
+          date: image.date,
+          featured: image.featured,
+        };
+      });
+    } else {
+      alert(response.status);
+    }
   },
 };
 </script>
@@ -116,7 +124,7 @@ a {
   text-decoration: none;
 }
 .main-wrap {
-  font-size: 11px;
+  font-size: $font-size;
   line-height: normal;
   min-height: 100vh;
 
