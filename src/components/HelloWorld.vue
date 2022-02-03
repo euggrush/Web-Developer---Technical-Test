@@ -94,8 +94,6 @@ export default {
     let response = await fetch(url);
     if (response.ok) {
       let account = await response.json();
-      console.log(account);
-
       this.account = account;
       this.avatar = require(`../assets/` + account.profile_picture);
       this.albumPictures = this.account.album.map((image) => {
